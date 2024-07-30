@@ -86,6 +86,8 @@ print(f"list_6: {list_6} 地址：{id(list_6)}")
 print(f"list_7: {list_7} 地址：{id(list_7)}")
 print("================================")
 
+
+# 数据容器类型变量的函数参数传递是：地址传递
 list_8 = [1, 2, 3, 4, 5]
 print(f"list_8: {list_8} 地址：{id(list_8)}")
 
