@@ -69,5 +69,5 @@ my python learning project
 ```
 
 # TODO
-- python 面向编程内容
+- python 面向对象编程内容
 - python 字符串驻留机制
