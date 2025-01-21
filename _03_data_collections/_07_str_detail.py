@@ -6,3 +6,13 @@
        比较的原理其实是比较字符的 ordinal value（原始值/码值）
      - 其余常用操作，请参考 python 官方文档
 """
+
+# 1 字符串的拼接
+str1 = "abc"
+str2 = "bcd"
+print(str1 + str2)
+
+# 2 使用分隔符拼接字符串
+catEntryDesc = ["发动机 - 短缸体", "变速箱", "底盘"]
+print(", ".join(catEntryDesc)) # 发动机 - 短缸体, 变速箱, 底盘
+

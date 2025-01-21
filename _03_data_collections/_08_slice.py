@@ -28,3 +28,14 @@ print("="*30)
 tuple_a = (1, 2, 3, 4, 5)
 print(tuple_a[2:4])
 print("="*30)
+
+# 4 特殊的切片操作
+
+# 倒序输出列表元素的切片
+catEntryFeatures = [
+    "安全带 - 标准（欧洲）",
+    "安全带 - 中灰色",
+    "LHD"
+]
+
+print(catEntryFeatures[::-1])

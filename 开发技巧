@@ -1,0 +1,17 @@
+"""
+    创建临时文件，然后写入临时文件，再删除原始文件，重命名临时文件为原始文件
+"""
+cache_csv_file = 'xxxxx'
+tmp_file = cache_csv_file + '.bak'
+# ....
+os.remove(cache_csv_file)
+os.rename(tmp_file, cache_csv_file)
+
+
+"""
+    确保文件所在的目录存在（不存在则创建）
+"""
+out_file_dir = os.path.dirname(out_file_path)
+if out_fil_dir: # 判断文件是否存在文件
+    # 递归创建目录，exist_ok=True 表示目录已存在时不报错
+    os.makedirs(out_file_dir, exist_ok=True)
