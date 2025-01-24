@@ -15,3 +15,15 @@ out_file_dir = os.path.dirname(out_file_path)
 if out_fil_dir: # 判断文件是否存在文件
     # 递归创建目录，exist_ok=True 表示目录已存在时不报错
     os.makedirs(out_file_dir, exist_ok=True)
+
+"""
+    常用的正则表达式（常用的就不用求人）
+"""
+\s 匹配空格
+\d 匹配数字
+\d+ 匹配一个或多个数字
+\d? 匹配零个或一个数字
+\d* 匹配零个或多个数字
+.* 匹配零个或多个任意字符（除了换行符）
+^ 匹配开头
+$ 匹配结尾
