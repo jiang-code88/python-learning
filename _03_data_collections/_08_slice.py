@@ -38,4 +38,4 @@ catEntryFeatures = [
     "LHD"
 ]
 
-print(catEntryFeatures[::-1])
+print(catEntryFeatures[::-1]) # ['LHD', '安全带 - 中灰色', '安全带 - 标准（欧洲）']

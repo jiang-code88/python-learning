@@ -27,3 +27,6 @@ if out_fil_dir: # 判断文件是否存在文件
 .* 匹配零个或多个任意字符（除了换行符）
 ^ 匹配开头
 $ 匹配结尾
+
+# 带时间戳的文件名
+print(f"dp_parts_info_{datetime.now().strftime("%Y%m%d_%H%M%S")}_all.csv")
