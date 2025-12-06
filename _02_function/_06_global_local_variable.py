@@ -52,3 +52,17 @@ print(f"global scope access global variable n1: {n1}")
 f3()
 print(f"global scope access function update global variable n1: {n1}")
 print("================================")
+
+
+def f4():
+    n20 = 80  # 这里定义的局部变量 n20 会覆盖函数外定义的全局变量 n20
+    print(f"n10={n10}")
+    print(f"n20={n20}")
+
+
+if __name__ == '__main__':
+    # main 方法中直接读取的是全局变量，不需要使用 global 关键字
+    n10 = 10
+    n20 = 20
+    # f4 函数执行时访问的也是在调用 f4 之前定义的全局变量 n10 和 n20
+    f4()
