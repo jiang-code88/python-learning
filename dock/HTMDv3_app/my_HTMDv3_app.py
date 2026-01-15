@@ -4,18 +4,18 @@
 # In[ ]:
 
 
-
-import os,time
+import os, time
 import subprocess
 import pandas as pd
 import shutil
-import re,openpyxl
+import re, openpyxl
 import openbabel
 import threading
-import xlsxwriter    #调用模块
+import xlsxwriter  # 调用模块
 import streamlit as st
 import py3Dmol
 import streamlit.components.v1 as components
+
 
 def remove_water_and_ligands(pdb_file, output_file):
     with open(pdb_file, 'r') as infile, open(output_file, 'w') as outfile:
@@ -28,6 +28,7 @@ def remove_water_and_ligands(pdb_file, output_file):
                     continue
                 # 如果是蛋白质的原子，则写入输出文件
                 outfile.write(line)
+
 
 # 定义支持的函数和类
 def compute_center_of_mass(pdb_file):
@@ -50,8 +51,9 @@ def compute_center_of_mass(pdb_file):
     center_x = sum(x_coords) / len(x_coords) if x_coords else 0
     center_y = sum(y_coords) / len(y_coords) if y_coords else 0
     center_z = sum(z_coords) / len(z_coords) if z_coords else 0
-    
+
     return center_x, center_y, center_z
+
 
 def compute_bounding_box(pdb_file):
     x_coords = []
@@ -81,6 +83,7 @@ def compute_bounding_box(pdb_file):
     else:
         return 0, 0, 0  # 如果没有坐标数据，返回 (0, 0, 0)
 
+
 def get_residue_coordinates(pdb_file, chain_id, residue_number):
     with open(pdb_file, 'r') as file:
         for line in file:
@@ -100,6 +103,7 @@ def get_residue_coordinates(pdb_file, chain_id, residue_number):
 
     raise ValueError(f"Residue {residue_number} in chain {chain_id} not found.")
 
+
 def get_file_names_without_extension(folder_path):
     file_names = []
     for file_name in os.listdir(folder_path):
@@ -108,8 +112,10 @@ def get_file_names_without_extension(folder_path):
             file_names.append(name_without_extension)
     return file_names
 
+
 # 共享变量来存储每个线程的进度
 progress_values = [0, 0, 0]
+
 
 def run_qvina(s, n_list, start, end, thread_id, CPU):
     for x in range(start, end):
@@ -117,14 +123,17 @@ def run_qvina(s, n_list, start, end, thread_id, CPU):
         progress = (x - start + 1) / (end - start)
         progress_values[thread_id - 1] = progress
         os.chdir(os.path.join(work_dir, protein_filename, "analzy", s[x]))
-        command = 'vina --config '+str(s[x])+'_config.txt --log '+str(s[x])+'.txt --out '+str(s[x])+'_out.pdbqt --exhaustiveness='+CPU
+        command = 'vina --config ' + str(s[x]) + '_config.txt --log ' + str(s[x]) + '.txt --out ' + str(
+            s[x]) + '_out.pdbqt --exhaustiveness=' + CPU
         result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
         if result.returncode == 0:
-            print(f"线程【{thread_id}】执行成功！！！还剩【{end-(x+1)}】个小分子！！！")
+            print(f"线程【{thread_id}】执行成功！！！还剩【{end - (x + 1)}】个小分子！！！")
         else:
             print(f"线程【{thread_id}】{str(s[x])}命令执行失败，返回代码: {result.returncode}")
 
     print(f"线程【{thread_id}】运行完成！！！")
+
+
 def stu1():
     for x in range(0, n_list):
         os.chdir(os.path.join(work_dir, protein_filename, "analzy", s[x]))
@@ -133,60 +142,68 @@ def stu1():
         result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
         # 检查命令执行结果
         if result.returncode == 0:
-            st.write("执行成功！！！"+"线程【1】还剩【"+str(n_list-(x+1))+"】个小分子！！！")
+            st.write("执行成功！！！" + "线程【1】还剩【" + str(n_list - (x + 1)) + "】个小分子！！！")
         else:
             st.write(f"线程【1】{str(s[x])}命令执行失败，返回代码: {result.returncode}")
     st.write("运行完成！！！")
+
+
 def stu2():
-    for x in range(n_list-1,n_list*2):
+    for x in range(n_list - 1, n_list * 2):
         os.chdir(os.path.join(work_dir, protein_filename, "analzy", s[x]))
         command = f'vina --config {s[x]}_config.txt --log {s[x]}.txt --out {s[x]}_out.pdbqt --exhaustiveness=8'
         # 使用subprocess.run调用CMD并执行命令
         result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
         # 检查命令执行结果
         if result.returncode == 0:
-            st.write("执行成功！！！"+"线程【2】还剩【"+str(n_list*2-(x+1))+"】个小分子！！！")
+            st.write("执行成功！！！" + "线程【2】还剩【" + str(n_list * 2 - (x + 1)) + "】个小分子！！！")
         else:
             st.write(f"线程【2】{str(s[x])}命令执行失败，返回代码: {result.returncode}")
     st.write("运行完成！！！")
+
+
 def stu3():
-    for x in range(n_list*2,len(s)):
+    for x in range(n_list * 2, len(s)):
         os.chdir(os.path.join(work_dir, protein_filename, "analzy", s[x]))
         command = f'vina --config {s[x]}_config.txt --log {s[x]}.txt --out {s[x]}_out.pdbqt --exhaustiveness=8'
         # 使用subprocess.run调用CMD并执行命令
         result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
         # 检查命令执行结果
         if result.returncode == 0:
-            st.write("执行成功！！！"+"线程【3】还剩【"+str(len(s)-(x+1))+"】个小分子！！！")
+            st.write("执行成功！！！" + "线程【3】还剩【" + str(len(s) - (x + 1)) + "】个小分子！！！")
         else:
             st.write(f"线程【3】{str(s[x])}命令执行失败，返回代码: {result.returncode}")
     st.write("运行完成！！！")
-    
+
+
 def model1():
-    for num in range(0,n_list):      #按行对文件内容的读取；
-        file_dir = work_dir+"\\"+protein_filename+'\\analzy\\'+s[num]   ####analyze文件夹工作路径
+    for num in range(0, n_list):  # 按行对文件内容的读取；
+        file_dir = work_dir + "\\" + protein_filename + '\\analzy\\' + s[num]  ####analyze文件夹工作路径
         file_name_list = os.listdir(file_dir)
         for file in file_name_list:
-            if file==s[num]+".txt":
-                DIR= file_dir  ####需要移动的原始文件所在路径
-                move_DIR = work_dir+"\\"+protein_filename+'\\vina_result'###vina_result路径
-                down_file_dir = DIR+'\\'+s[num]+".txt"  #移动前文件
-                move_dir_1 = os.path.join(move_DIR,file)    #把目录和文件名合成一个路径
+            if file == s[num] + ".txt":
+                DIR = file_dir  ####需要移动的原始文件所在路径
+                move_DIR = work_dir + "\\" + protein_filename + '\\vina_result'  ###vina_result路径
+                down_file_dir = DIR + '\\' + s[num] + ".txt"  # 移动前文件
+                move_dir_1 = os.path.join(move_DIR, file)  # 把目录和文件名合成一个路径
                 move_dir_2 = move_DIR
-                shutil.move(down_file_dir,move_dir_2)
+                shutil.move(down_file_dir, move_dir_2)
+
 
 def model2():
-    for num in range(n_list,len(s)):      #按行对文件内容的读取；
-        file_dir = work_dir+"\\"+protein_filename+'\\analzy\\'+s[num]   ####analyze文件夹工作路径
+    for num in range(n_list, len(s)):  # 按行对文件内容的读取；
+        file_dir = work_dir + "\\" + protein_filename + '\\analzy\\' + s[num]  ####analyze文件夹工作路径
         file_name_list = os.listdir(file_dir)
         for file in file_name_list:
-            if file==s[num]+".txt":
-                DIR= file_dir  ####需要移动的原始文件所在路径
-                move_DIR = work_dir+"\\"+protein_filename+'\\vina_result'###vina_result路径
-                down_file_dir = DIR+'\\'+s[num]+".txt"  #移动前文件
-                move_dir_1 = os.path.join(move_DIR,file)    #把目录和文件名合成一个路径
+            if file == s[num] + ".txt":
+                DIR = file_dir  ####需要移动的原始文件所在路径
+                move_DIR = work_dir + "\\" + protein_filename + '\\vina_result'  ###vina_result路径
+                down_file_dir = DIR + '\\' + s[num] + ".txt"  # 移动前文件
+                move_dir_1 = os.path.join(move_DIR, file)  # 把目录和文件名合成一个路径
                 move_dir_2 = move_DIR
-                shutil.move(down_file_dir,move_dir_2)
+                shutil.move(down_file_dir, move_dir_2)
+
+
 def delete_files(files):
     for file in files:
         file_path = os.path.join(work_dir, file)
@@ -194,6 +211,7 @@ def delete_files(files):
             os.remove(file_path)
         else:
             print(f"{file} 不存在")
+
 
 def extract_amino_acid_sequence_by_chain(pdb_file):
     chain_sequences = {}  # 用于存储每个链的氨基酸序列
@@ -263,22 +281,23 @@ pdb_file = st.sidebar.file_uploader("上传处理后的蛋白质PDB文件", type
 chain_ids = st.sidebar.text_input("目标链，例如：A 或者 A;B", "A")  # 输入你需要分析的目标链
 check = st.sidebar.text_input("选择结合口袋设置策略：blindness或者amino acid", "blindness")
 amino_acid_ID = st.sidebar.text_input("如果选择amino acid，请输入氨基酸序号", "NA")
-CPU_core= st.sidebar.text_input("输入用于计算内核数量（系统核数/3）", "8")
+CPU_core = st.sidebar.text_input("输入用于计算内核数量（系统核数/3）", "8")
 thread = st.sidebar.text_input("输入需要使用的线程数量", "3")
 mgltools_path = st.sidebar.text_input("MGLTools安装目录", "D:/ADT_software/")
 run_button2 = st.sidebar.button("运行分析")
 work_dir = work_dir.replace("\\", "/")
 
-st.write("高通量分子对接技术是一种重要的计算机辅助药物设计方法，通过模拟小分子配体与目标蛋白质受体之间的结合过程，筛选和优化潜在的药物候选分子。该技术结合了计算化学、分子建模和生物信息学等多学科方法，能够高效地预测小分子与蛋白质的相互作用模式和结合能，评估小分子的活性和选择性，从而加速药物发现过程。")
+st.write(
+    "高通量分子对接技术是一种重要的计算机辅助药物设计方法，通过模拟小分子配体与目标蛋白质受体之间的结合过程，筛选和优化潜在的药物候选分子。该技术结合了计算化学、分子建模和生物信息学等多学科方法，能够高效地预测小分子与蛋白质的相互作用模式和结合能，评估小分子的活性和选择性，从而加速药物发现过程。")
 if run_button1 and protein_name is not None:
     ###预先展示蛋白质
     os.makedirs(work_dir, exist_ok=True)
-    pdb_file_path = os.path.join(work_dir, protein_name+".pdb")
-    pdb_file = os.path.join(work_dir, protein_name+".pdb")
-    output_file = os.path.join(work_dir,protein_name+"_processed.pdb")  # 输出文件路径
+    pdb_file_path = os.path.join(work_dir, protein_name + ".pdb")
+    pdb_file = os.path.join(work_dir, protein_name + ".pdb")
+    output_file = os.path.join(work_dir, protein_name + "_processed.pdb")  # 输出文件路径
     remove_water_and_ligands(pdb_file, output_file)
     time.sleep(3)
-    protein_name_1 = protein_name+"_processed.pdb"
+    protein_name_1 = protein_name + "_processed.pdb"
     pdb_file_path_3D = os.path.join(work_dir, protein_name_1)
     os.chdir(work_dir)
     st.write("-----可视化蛋白质结构-----")
@@ -295,7 +314,8 @@ if run_button1 and protein_name is not None:
         html_content = f.read()
         components.html(html_content, height=600)
     # 使用示例
-    st.write("-----目标蛋白质氨基酸序列展示如下，若使用特定氨基酸作为对接盒子中心，请将下方特定氨基酸序号填入左侧“amino_acid_ID”-----")
+    st.write(
+        "-----目标蛋白质氨基酸序列展示如下，若使用特定氨基酸作为对接盒子中心，请将下方特定氨基酸序号填入左侧“amino_acid_ID”-----")
     pdb_file1 = protein_name_1  # 输入文件路径
     sequence = extract_amino_acid_sequence_by_chain(pdb_file1)
     st.write("-----结束目标受体蛋白质预处理，接下来开始对接之旅！！！-----")
@@ -304,13 +324,14 @@ if run_button2 and pdb_file is not None:
     thread = int(thread)
     st.write("-----开始生成目标受体蛋白质PDBQT-----")
     time.sleep(3)
-    pdb_file_path = os.path.join(work_dir, protein_name+".pdb")
-    pdb_file = os.path.join(work_dir, protein_name+".pdb")
-    output_file = os.path.join(work_dir,protein_name+"_processed.pdb")  # 输出文件路径
-    protein_name_1 = protein_name+"_processed.pdb"
+    pdb_file_path = os.path.join(work_dir, protein_name + ".pdb")
+    pdb_file = os.path.join(work_dir, protein_name + ".pdb")
+    output_file = os.path.join(work_dir, protein_name + "_processed.pdb")  # 输出文件路径
+    protein_name_1 = protein_name + "_processed.pdb"
     # 使用MGLTools生成PDBQT文件
     python_exe = os.path.join(mgltools_path, 'python.exe')
-    prepare_receptor_script = os.path.join(mgltools_path, 'Lib/site-packages/AutoDockTools/Utilities24/prepare_receptor4.py')
+    prepare_receptor_script = os.path.join(mgltools_path,
+                                           'Lib/site-packages/AutoDockTools/Utilities24/prepare_receptor4.py')
     command = f'"{python_exe}" "{prepare_receptor_script}" -r {protein_name_1} -A hydrogens -o processed_protein.pdbqt'
     process = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
     output, error = process.communicate()
@@ -325,7 +346,7 @@ if run_button2 and pdb_file is not None:
     time.sleep(3)
     receptor_pdbqt = 'processed_protein.pdbqt'
     if check == "blindness":
-        
+
         center_x, center_y, center_z = compute_center_of_mass(receptor_pdbqt)
         size_x, size_y, size_z = compute_bounding_box(receptor_pdbqt)
         st.write("-----受体蛋白质中心位置：-----")
@@ -373,7 +394,7 @@ if run_button2 and pdb_file is not None:
         st.write("-----配体文件的预处理完成，其实也挺快-----")
     except subprocess.CalledProcessError as e:
         st.write(f"批处理文件执行失败，返回代码: {e.returncode}")
-    
+
     time.sleep(5)
     folder_path = ligand_pdbqt_dir
     s = get_file_names_without_extension(folder_path)
@@ -381,13 +402,13 @@ if run_button2 and pdb_file is not None:
     CPU_core = str(CPU_core)
     protein_filename = os.path.splitext(os.path.basename(pdb_file_path))[0]
     st.write("-----设置分子对接目录-----")
-    path_analzy = work_dir+"\\"+protein_filename+"\\analzy"####需要设置文件夹的路径
+    path_analzy = work_dir + "\\" + protein_filename + "\\analzy"  ####需要设置文件夹的路径
     os.makedirs(path_analzy)
-    path_analzy3 = work_dir+"\\"+protein_filename+"\\vina_result"
+    path_analzy3 = work_dir + "\\" + protein_filename + "\\vina_result"
     os.makedirs(path_analzy3)
-    for i in range(0,len(s)):
+    for i in range(0, len(s)):
         dirName = str(s[i])
-        os.makedirs(path_analzy+"\\"+dirName)#批量建立文件夹
+        os.makedirs(path_analzy + "\\" + dirName)  # 批量建立文件夹
     source_dir = work_dir  # 替换为你的源目录路径
     target_dir = work_dir + '/target_folder'  # 替换为你的目标目录路径
     # 确保目标目录存在
@@ -406,63 +427,64 @@ if run_button2 and pdb_file is not None:
             st.write(f"Moved: {filename}")
     st.write("所有文件移动完成")
     st.write("-----配置vina_config.txt文件，以及驱动程序配置-----")
-    for i in range(0,len(s)):
-        receptor = receptor_pdbqt   #需要添加受体名称.pdbqt文件
-        ligand  = s[i]+".pdbqt"
+    for i in range(0, len(s)):
+        receptor = receptor_pdbqt  # 需要添加受体名称.pdbqt文件
+        ligand = s[i] + ".pdbqt"
         ###确定受体的对接口袋位置
-        X1 = "center_x = "+str(center_x)
-        Y1 = "center_y = "+str(center_y)
-        Z1 = "center_z = "+str(center_z)
+        X1 = "center_x = " + str(center_x)
+        Y1 = "center_y = " + str(center_y)
+        Z1 = "center_z = " + str(center_z)
 
-        X2 = "size_x = "+str(size_x)
-        Y2 = "size_y = "+str(size_y)
-        Z2 = "size_z = "+str(size_z)
-        #在小分子文件夹中写入相应的config.txt文件
-        lines = ['receptor = '+receptor, 'ligand = '+ligand+'\n', X1,Y1,Z1+'\n',X2,Y2,Z2+'\n','energy_range = 5','num_modes = 10']
-        path_new = work_dir+"\\"+protein_filename+"\\analzy\\"+s[i]
-        with open(path_new + "/" + s[i]+"_config.txt", 'w') as file:
+        X2 = "size_x = " + str(size_x)
+        Y2 = "size_y = " + str(size_y)
+        Z2 = "size_z = " + str(size_z)
+        # 在小分子文件夹中写入相应的config.txt文件
+        lines = ['receptor = ' + receptor, 'ligand = ' + ligand + '\n', X1, Y1, Z1 + '\n', X2, Y2, Z2 + '\n',
+                 'energy_range = 5', 'num_modes = 10']
+        path_new = work_dir + "\\" + protein_filename + "\\analzy\\" + s[i]
+        with open(path_new + "/" + s[i] + "_config.txt", 'w') as file:
             for line in lines:
                 file.write(line + '\n')
 
         cmd = f'qvina2 --config {s[0]}_config.txt --log {s[0]}.txt --out {s[0]}_out.pdbqt --exhaustiveness=8'
         with open(path_new + "/" + "cmd.bat", 'w') as file:
             file.write(cmd)
-    for j in range(0,len(s)):
-    #将受体文件和小分子的（.pdbqt文件）移动至各个小分子文件夹       
-        ligand_DIR = work_dir+'\\ligand_pdbqt'    ####需要移动的原始文件所在路径
-        receptor_DIR = work_dir+'\\target_folder' 
-        move_DIR = work_dir+"\\"+protein_filename+"\\analzy\\" +s[j]  ####希望移动到的新路径。注意：此路径必须存在！！！
+    for j in range(0, len(s)):
+        # 将受体文件和小分子的（.pdbqt文件）移动至各个小分子文件夹
+        ligand_DIR = work_dir + '\\ligand_pdbqt'  ####需要移动的原始文件所在路径
+        receptor_DIR = work_dir + '\\target_folder'
+        move_DIR = work_dir + "\\" + protein_filename + "\\analzy\\" + s[j]  ####希望移动到的新路径。注意：此路径必须存在！！！
 
-        for path,dirs,files in os.walk(receptor_DIR):       #注意改路径只放受体的pdb文件，和处理好的pdbqt文件
-
-            for file in files:
-                file_name=file
-                down_file_dir = receptor_DIR+'\\'+file   #移动前文件
-                move_dir_1= os.path.join(move_DIR,file_name)    #把目录和文件名合成一个路径
-                move_dir_2= move_DIR+'\\'+file_name
-                shutil.copy(down_file_dir,move_dir_2)     #进行文件移动
-
-        for path,dirs,files in os.walk(ligand_DIR):       #注意改路径只放小分子的pdbqt文件
+        for path, dirs, files in os.walk(receptor_DIR):  # 注意改路径只放受体的pdb文件，和处理好的pdbqt文件
 
             for file in files:
-                file_name=file
-                ligand_name=file.split('.')[0]
-                if ligand_name==s[j]:
-                    down_file_dir = ligand_DIR+'\\'+file   #移动前文件
-                    move_dir_1= os.path.join(move_DIR,file_name)    #把目录和文件名合成一个路径
-                    move_dir_2= move_DIR+'\\'+file_name
-                    shutil.copy(down_file_dir,move_dir_2)     #进行文件移动
-        vina_DIR = work_dir+'\\vina'    ####需要移动的原始文件所在路径
-        move_DIR = work_dir+"\\"+protein_filename+"\\analzy\\" +s[j]  ####希望移动到的新路径。注意：此路径必须存在！！！
+                file_name = file
+                down_file_dir = receptor_DIR + '\\' + file  # 移动前文件
+                move_dir_1 = os.path.join(move_DIR, file_name)  # 把目录和文件名合成一个路径
+                move_dir_2 = move_DIR + '\\' + file_name
+                shutil.copy(down_file_dir, move_dir_2)  # 进行文件移动
 
-        for path,dirs,files in os.walk(vina_DIR):       #注意改路径只放受体的pdb文件，和处理好的pdbqt文件
+        for path, dirs, files in os.walk(ligand_DIR):  # 注意改路径只放小分子的pdbqt文件
 
             for file in files:
-                file_name=file
-                down_file_dir = vina_DIR+'\\'+file   #移动前文件
-                move_dir_1= os.path.join(move_DIR,file_name)    #把目录和文件名合成一个路径
-                move_dir_2= move_DIR+'\\'+file_name
-                shutil.copy(down_file_dir,move_dir_2)     #进行文件移动
+                file_name = file
+                ligand_name = file.split('.')[0]
+                if ligand_name == s[j]:
+                    down_file_dir = ligand_DIR + '\\' + file  # 移动前文件
+                    move_dir_1 = os.path.join(move_DIR, file_name)  # 把目录和文件名合成一个路径
+                    move_dir_2 = move_DIR + '\\' + file_name
+                    shutil.copy(down_file_dir, move_dir_2)  # 进行文件移动
+        vina_DIR = work_dir + '\\vina'  ####需要移动的原始文件所在路径
+        move_DIR = work_dir + "\\" + protein_filename + "\\analzy\\" + s[j]  ####希望移动到的新路径。注意：此路径必须存在！！！
+
+        for path, dirs, files in os.walk(vina_DIR):  # 注意改路径只放受体的pdb文件，和处理好的pdbqt文件
+
+            for file in files:
+                file_name = file
+                down_file_dir = vina_DIR + '\\' + file  # 移动前文件
+                move_dir_1 = os.path.join(move_DIR, file_name)  # 把目录和文件名合成一个路径
+                move_dir_2 = move_DIR + '\\' + file_name
+                shutil.copy(down_file_dir, move_dir_2)  # 进行文件移动
     time.sleep(3)
     st.write("-----配置完成-----")
     st.write("-----开始分子对接计算！！！可能需要不少的时间，可以做点别的工作.......-----")
@@ -477,15 +499,15 @@ if run_button2 and pdb_file is not None:
         st.write(f"线程【1】{str(s[0])}命令执行失败，返回代码: {result.returncode}")
     st.write("运行完成！！！")
     if thread == 1:
-        
+
         if __name__ == "__main__":
-        # 创建进度条和进度文本
+            # 创建进度条和进度文本
             progress_bar1 = st.progress(0)
             progress_text1 = st.empty()
 
             # 启动线程
-            T1 = threading.Thread(target=run_qvina, args=(s, n_list, 0, len(s), 1,CPU_core), name="T1")
-            
+            T1 = threading.Thread(target=run_qvina, args=(s, n_list, 0, len(s), 1, CPU_core), name="T1")
+
             T1.start()
 
             while any(t.is_alive() for t in [T1]):
@@ -498,18 +520,18 @@ if run_button2 and pdb_file is not None:
 
         time.sleep(10)
     if thread == 2:
-        
+
         if __name__ == "__main__":
-        # 创建进度条和进度文本
+            # 创建进度条和进度文本
             progress_bar1 = st.progress(0)
             progress_text1 = st.empty()
             progress_bar2 = st.progress(0)
             progress_text2 = st.empty()
 
             # 启动线程
-            T1 = threading.Thread(target=run_qvina, args=(s, n_list, 0, n_list, 1,CPU_core), name="T1")
-            T2 = threading.Thread(target=run_qvina, args=(s, n_list, n_list-1, len(s), 2,CPU_core), name="T2")
-            
+            T1 = threading.Thread(target=run_qvina, args=(s, n_list, 0, n_list, 1, CPU_core), name="T1")
+            T2 = threading.Thread(target=run_qvina, args=(s, n_list, n_list - 1, len(s), 2, CPU_core), name="T2")
+
             T1.start()
             T2.start()
 
@@ -526,9 +548,9 @@ if run_button2 and pdb_file is not None:
 
         time.sleep(10)
     if thread == 3:
-        
+
         if __name__ == "__main__":
-        # 创建进度条和进度文本
+            # 创建进度条和进度文本
             progress_bar1 = st.progress(0)
             progress_text1 = st.empty()
             progress_bar2 = st.progress(0)
@@ -537,10 +559,11 @@ if run_button2 and pdb_file is not None:
             progress_text3 = st.empty()
 
             # 启动线程
-            T1 = threading.Thread(target=run_qvina, args=(s, n_list, 0, n_list, 1,CPU_core), name="T1")
-            T2 = threading.Thread(target=run_qvina, args=(s, n_list, n_list-1, 2*n_list+1, 2,CPU_core), name="T2")
-            T3 = threading.Thread(target=run_qvina, args=(s, n_list, 2*n_list, len(s), 3,CPU_core), name="T3")
-            
+            T1 = threading.Thread(target=run_qvina, args=(s, n_list, 0, n_list, 1, CPU_core), name="T1")
+            T2 = threading.Thread(target=run_qvina, args=(s, n_list, n_list - 1, 2 * n_list + 1, 2, CPU_core),
+                                  name="T2")
+            T3 = threading.Thread(target=run_qvina, args=(s, n_list, 2 * n_list, len(s), 3, CPU_core), name="T3")
+
             T1.start()
             T2.start()
             T3.start()
@@ -569,41 +592,41 @@ if run_button2 and pdb_file is not None:
         M2.start()
         M1.join()
         M2.join()
-    files_to_delete = [work_dir+"/convert_ligands.bat", work_dir+"/tmp.html"]
-# 调用删除函数
+    files_to_delete = [work_dir + "/convert_ligands.bat", work_dir + "/tmp.html"]
+    # 调用删除函数
     delete_files(files_to_delete)
-    path = work_dir+"\\"+protein_filename+'\\vina_result'####vina_result路径
+    path = work_dir + "\\" + protein_filename + '\\vina_result'  ####vina_result路径
     file_name_list = os.listdir(path)
     file_name = list(file_name_list)
-    st.write("本次对接计算共有【"+str(len(s))+"】个小分子，已经完成【"+str(len(file_name))+"】个。")
-    os.chdir(work_dir+"\\"+protein_filename+'\\vina_result')       #vina_result路径
-    value1=[]
-    for o in range(0,len(file_name)):
-        f  = open(file_name[o],'r',encoding='utf-8') #填写文件名
-        vina=[]
-        for lines in f:      #按行对文件内容的读取；
-            ls = lines.strip(' ').replace('\n','').split(';')    #规定分隔符
-            #print(ls)
+    st.write("本次对接计算共有【" + str(len(s)) + "】个小分子，已经完成【" + str(len(file_name)) + "】个。")
+    os.chdir(work_dir + "\\" + protein_filename + '\\vina_result')  # vina_result路径
+    value1 = []
+    for o in range(0, len(file_name)):
+        f = open(file_name[o], 'r', encoding='utf-8')  # 填写文件名
+        vina = []
+        for lines in f:  # 按行对文件内容的读取；
+            ls = lines.strip(' ').replace('\n', '').split(';')  # 规定分隔符
+            # print(ls)
             for j in ls:
                 vina.append(j)
-        value = vina[-11].replace("1        ","").replace("      0.000      0.000","").strip(' ')
-        #print(value)
+        value = vina[-11].replace("1        ", "").replace("      0.000      0.000", "").strip(' ')
+        # print(value)
         value1.append(value)
-    path = work_dir+"\\"+protein_filename+'\\vina_result'####vina_result路径
+    path = work_dir + "\\" + protein_filename + '\\vina_result'  ####vina_result路径
     file_name_list = os.listdir(path)
     file_name = list(file_name_list)
-    os.chdir(work_dir+"\\"+protein_filename)       #生成表格的表格路径
-    workbook = xlsxwriter.Workbook(protein_filename+'_result.xlsx')     #新建文件
-    worksheet = workbook.add_worksheet()             #新建sheet
+    os.chdir(work_dir + "\\" + protein_filename)  # 生成表格的表格路径
+    workbook = xlsxwriter.Workbook(protein_filename + '_result.xlsx')  # 新建文件
+    worksheet = workbook.add_worksheet()  # 新建sheet
     bold = workbook.add_format({'bold': True})
     worksheet.write(0, 0, "ligand_ID")
     worksheet.write(0, 1, "结合能")
     for x in range(len(file_name)):
-        row = x+1
-        worksheet.write(row, 0, file_name[x].replace(".txt",""))
+        row = x + 1
+        worksheet.write(row, 0, file_name[x].replace(".txt", ""))
         worksheet.write(row, 1, value1[x])
     workbook.close()  # 保存并关闭
-    df = pd.read_excel(protein_filename+'_result.xlsx')
+    df = pd.read_excel(protein_filename + '_result.xlsx')
     styled_df = df.style.set_properties(**{'width': '150px'})
     # 显示调整后的DataFrame
     st.dataframe(styled_df)
