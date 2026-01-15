@@ -12,3 +12,16 @@
 
 ### python
 __pycache__/
+
+
+log/*
+!log/.gitkeep
+data/*
+!data/.gitkeep
+
+venv/
+test/
+conf/.env
+.pyc
+.cursorignore
+.cursor

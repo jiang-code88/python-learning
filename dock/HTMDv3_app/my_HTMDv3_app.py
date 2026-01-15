@@ -16,6 +16,59 @@ import streamlit as st
 import py3Dmol
 import streamlit.components.v1 as components
 
+# Streamlit界面
+# 美化页面并添加图片
+st.set_page_config(page_title="蛋白质配体对接分析", page_icon="🔬", layout="wide")
+# 自定义CSS样式来添加背景图片
+background_image_url = \
+    "https://img.pptjia.com/image/20181121/fc28da12ef7e66124969445bb6a3eda2.png"
+
+st.markdown(
+    f"""
+    <style>
+    .stApp {{
+        background-image: url("{background_image_url}");
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+    }}
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
+# 页面标题
+st.title("蛋白质配体对接分析")
+
+# 设置参数
+st.sidebar.header("设置参数")
+work_dir = st.sidebar.text_input("工作目录路径，注意：要求全英文！", r"D:\dock")
+protein_name = st.sidebar.text_input("请输入你的目标蛋白名称", "protein")
+run_button1 = st.sidebar.button("可视化蛋白质")
+pdb_file = st.sidebar.file_uploader("上传处理后的蛋白质PDB文件", type="pdb")
+chain_ids = st.sidebar.text_input("目标链，例如：A 或者 A;B", "A")  # 输入你需要分析的目标链
+check = st.sidebar.text_input("选择结合口袋设置策略：blindness或者amino acid", "blindness")
+amino_acid_ID = st.sidebar.text_input("如果选择amino acid，请输入氨基酸序号", "NA")
+CPU_core = st.sidebar.text_input("输入用于计算内核（系统核数/3）", "32")
+thread = st.sidebar.text_input("输入需要使用的线程数量", "1")
+mgltools_path = st.sidebar.text_input("MGLTools安装目录", r"C:\Program Files (x86)\MGLTools-1.5.7")
+run_button2 = st.sidebar.button("运行分析")
+work_dir = work_dir.replace("\\", "/")
+
+###############################
+protein_dir = os.path.join(work_dir, protein_name)
+vina_result_dir = os.path.join(protein_dir, 'vina_result')
+ligand_pdbqt_dir = os.path.join(work_dir, "ligand_pdbqt")
+###############################
+
+
+st.write(
+    "高通量分子对接技术是一种重要的计算机辅助药物设计方法，"
+    "通过模拟小分子配体与目标蛋白质受体之间的结合过程，筛选和优化潜在的药物候选分子。"
+    "该技术结合了计算化学、分子建模和生物信息学等多学科方法，"
+    "能够高效地预测小分子与蛋白质的相互作用模式和结合能，"
+    "评估小分子的活性和选择性，从而加速药物发现过程。")
+
 
 def remove_water_and_ligands(pdb_file, output_file):
     with open(pdb_file, 'r') as infile, open(output_file, 'w') as outfile:
@@ -123,8 +176,8 @@ def run_qvina(s, n_list, start, end, thread_id, CPU):
         progress = (x - start + 1) / (end - start)
         progress_values[thread_id - 1] = progress
         os.chdir(os.path.join(work_dir, protein_filename, "analzy", s[x]))
-        command = 'vina --config ' + str(s[x]) + '_config.txt --log ' + str(s[x]) + '.txt --out ' + str(
-            s[x]) + '_out.pdbqt --exhaustiveness=' + CPU
+        command = ('vina --config ' + str(s[x]) + '_config.txt --log ' + str(s[x]) + '.txt --out ' +
+                   str(s[x]) + '_out.pdbqt --exhaustiveness=' + CPU)
         result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
         if result.returncode == 0:
             print(f"线程【{thread_id}】执行成功！！！还剩【{end - (x + 1)}】个小分子！！！")
@@ -132,48 +185,6 @@ def run_qvina(s, n_list, start, end, thread_id, CPU):
             print(f"线程【{thread_id}】{str(s[x])}命令执行失败，返回代码: {result.returncode}")
 
     print(f"线程【{thread_id}】运行完成！！！")
-
-
-def stu1():
-    for x in range(0, n_list):
-        os.chdir(os.path.join(work_dir, protein_filename, "analzy", s[x]))
-        command = f'vina --config {s[x]}_config.txt --log {s[x]}.txt --out {s[x]}_out.pdbqt --exhaustiveness=8'
-        # 使用subprocess.run调用CMD并执行命令
-        result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
-        # 检查命令执行结果
-        if result.returncode == 0:
-            st.write("执行成功！！！" + "线程【1】还剩【" + str(n_list - (x + 1)) + "】个小分子！！！")
-        else:
-            st.write(f"线程【1】{str(s[x])}命令执行失败，返回代码: {result.returncode}")
-    st.write("运行完成！！！")
-
-
-def stu2():
-    for x in range(n_list - 1, n_list * 2):
-        os.chdir(os.path.join(work_dir, protein_filename, "analzy", s[x]))
-        command = f'vina --config {s[x]}_config.txt --log {s[x]}.txt --out {s[x]}_out.pdbqt --exhaustiveness=8'
-        # 使用subprocess.run调用CMD并执行命令
-        result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
-        # 检查命令执行结果
-        if result.returncode == 0:
-            st.write("执行成功！！！" + "线程【2】还剩【" + str(n_list * 2 - (x + 1)) + "】个小分子！！！")
-        else:
-            st.write(f"线程【2】{str(s[x])}命令执行失败，返回代码: {result.returncode}")
-    st.write("运行完成！！！")
-
-
-def stu3():
-    for x in range(n_list * 2, len(s)):
-        os.chdir(os.path.join(work_dir, protein_filename, "analzy", s[x]))
-        command = f'vina --config {s[x]}_config.txt --log {s[x]}.txt --out {s[x]}_out.pdbqt --exhaustiveness=8'
-        # 使用subprocess.run调用CMD并执行命令
-        result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
-        # 检查命令执行结果
-        if result.returncode == 0:
-            st.write("执行成功！！！" + "线程【3】还剩【" + str(len(s) - (x + 1)) + "】个小分子！！！")
-        else:
-            st.write(f"线程【3】{str(s[x])}命令执行失败，返回代码: {result.returncode}")
-    st.write("运行完成！！！")
 
 
 def model1():
@@ -203,8 +214,9 @@ def delete_files(files):
         file_path = os.path.join(work_dir, file)
         if os.path.exists(file_path):
             os.remove(file_path)
+            print(f"[remove] 删除文件 {file}")
         else:
-            print(f"{file} 不存在")
+            print(f"[remove] 文件 {file} 不存在")
 
 
 def extract_amino_acid_sequence_by_chain(pdb_file):
@@ -243,46 +255,6 @@ def extract_amino_acid_sequence_by_chain(pdb_file):
     return formatted_sequences  # 返回按链划分的氨基酸序列
 
 
-# Streamlit界面
-# 美化页面并添加图片
-st.set_page_config(page_title="蛋白质配体对接分析", page_icon="🔬", layout="wide")
-# 自定义CSS样式来添加背景图片
-background_image_url = "https://img.pptjia.com/image/20181121/fc28da12ef7e66124969445bb6a3eda2.png"  # 替换为实际的背景图片URL
-
-st.markdown(
-    f"""
-    <style>
-    .stApp {{
-        background-image: url("{background_image_url}");
-        background-size: cover;
-        background-position: center;
-        background-repeat: no-repeat;
-    }}
-    </style>
-    """,
-    unsafe_allow_html=True
-)
-
-# 页面标题
-st.title("蛋白质配体对接分析")
-
-# 设置参数
-st.sidebar.header("设置参数")
-work_dir = st.sidebar.text_input("工作目录路径，注意：要求全英文！", r"D:\dock")
-protein_name = st.sidebar.text_input("请输入你的目标蛋白名称", "protein")
-run_button1 = st.sidebar.button("可视化蛋白质")
-pdb_file = st.sidebar.file_uploader("上传处理后的蛋白质PDB文件", type="pdb")
-chain_ids = st.sidebar.text_input("目标链，例如：A 或者 A;B", "A")  # 输入你需要分析的目标链
-check = st.sidebar.text_input("选择结合口袋设置策略：blindness或者amino acid", "blindness")
-amino_acid_ID = st.sidebar.text_input("如果选择amino acid，请输入氨基酸序号", "NA")
-CPU_core = st.sidebar.text_input("输入用于计算内核（系统核数/3）", "32")
-thread = st.sidebar.text_input("输入需要使用的线程数量", "1")
-mgltools_path = st.sidebar.text_input("MGLTools安装目录", r"C:\Program Files (x86)\MGLTools-1.5.7")
-run_button2 = st.sidebar.button("运行分析")
-work_dir = work_dir.replace("\\", "/")
-
-st.write(
-    "高通量分子对接技术是一种重要的计算机辅助药物设计方法，通过模拟小分子配体与目标蛋白质受体之间的结合过程，筛选和优化潜在的药物候选分子。该技术结合了计算化学、分子建模和生物信息学等多学科方法，能够高效地预测小分子与蛋白质的相互作用模式和结合能，评估小分子的活性和选择性，从而加速药物发现过程。")
 if run_button1 and protein_name is not None:
     ###预先展示蛋白质
     os.makedirs(work_dir, exist_ok=True)
@@ -586,43 +558,49 @@ if run_button2 and pdb_file is not None:
         M2.start()
         M1.join()
         M2.join()
-    files_to_delete = [work_dir + "/convert_ligands.bat", work_dir + "/tmp.html"]
-    # 调用删除函数
+    files_to_delete = [os.path.join(work_dir, r"convert_ligands.bat"),
+                       os.path.join(work_dir, "tmp.html")]
     delete_files(files_to_delete)
-    path = work_dir + "\\" + protein_filename + '\\vina_result'  ####vina_result路径
-    file_name_list = os.listdir(path)
-    file_name = list(file_name_list)
-    st.write("本次对接计算共有【" + str(len(s)) + "】个小分子，已经完成【" + str(len(file_name)) + "】个。")
-    os.chdir(work_dir + "\\" + protein_filename + '\\vina_result')  # vina_result路径
-    value1 = []
-    for o in range(0, len(file_name)):
-        f = open(file_name[o], 'r', encoding='utf-8')  # 填写文件名
-        vina = []
-        for lines in f:  # 按行对文件内容的读取；
-            ls = lines.strip(' ').replace('\n', '').split(';')  # 规定分隔符
-            # print(ls)
+
+    vina_result_file_name_list = os.listdir(vina_result_dir)
+    vina_result_file_name_list = list(vina_result_file_name_list)
+    st.write(
+        "本次对接计算共有【" + str(len(s)) + "】个小分子，已经完成【" + str(len(vina_result_file_name_list)) + "】个。")
+
+    ligand_best_dock_list = []
+    os.chdir(vina_result_dir)
+    for vina_result_file_name in vina_result_file_name_list:
+        f = open(vina_result_file_name, 'r', encoding='utf-8')
+        vina_content = []
+        for lines in f:
+            ls = lines.strip(' ').replace('\n', '').split(';')
             for j in ls:
-                vina.append(j)
-        value = vina[-11].replace("1        ", "").replace("      0.000      0.000", "").strip(' ')
-        # print(value)
-        value1.append(value)
-    path = work_dir + "\\" + protein_filename + '\\vina_result'  ####vina_result路径
-    file_name_list = os.listdir(path)
-    file_name = list(file_name_list)
-    os.chdir(work_dir + "\\" + protein_filename)  # 生成表格的表格路径
-    workbook = xlsxwriter.Workbook(protein_filename + '_result.xlsx')  # 新建文件
-    worksheet = workbook.add_worksheet()  # 新建sheet
+                vina_content.append(j)
+        value = vina_content[-11].replace("1        ", "").replace("      0.000      0.000", "").strip(' ')
+        ligand_best_dock_list.append((vina_result_file_name.replace(".txt", ""), value))
+    ligand_best_dock_list.sort(key=lambda k: float(k[1]))
+
+    os.chdir(protein_dir)
+    work_book_file = protein_name + '_result.xlsx'
+    if os.path.exists(work_book_file):
+        os.remove(work_book_file)
+    workbook = xlsxwriter.Workbook(work_book_file)
+    worksheet = workbook.add_worksheet()
     bold = workbook.add_format({'bold': True})
     worksheet.write(0, 0, "ligand_ID")
     worksheet.write(0, 1, "结合能")
-    for x in range(len(file_name)):
-        row = x + 1
-        worksheet.write(row, 0, file_name[x].replace(".txt", ""))
-        worksheet.write(row, 1, value1[x])
-    workbook.close()  # 保存并关闭
-    df = pd.read_excel(protein_filename + '_result.xlsx')
+
+    row = 0
+    for ele in ligand_best_dock_list:
+        row = row + 1
+        worksheet.write(row, 0, ele[0])
+        worksheet.write(row, 1, ele[1])
+    workbook.close()
+
+    df = pd.read_excel(work_book_file)
     styled_df = df.style.set_properties(**{'width': '150px'})
-    # 显示调整后的DataFrame
     st.dataframe(styled_df)
+
+    # 拷贝结合能前 10 的 xxx_out.pdbqt 文件复制到目录 best_10_out 目录中
+
     st.write("-----分子对接结果已经生成，请查收！感谢使用HTMD v2.0，有问题请联系：geng20210226@163.com")
-    # 读取生成的Excel文件并进行可视化
