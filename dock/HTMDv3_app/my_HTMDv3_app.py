@@ -177,31 +177,25 @@ def stu3():
 
 
 def model1():
+    dest_dir = work_dir + "\\" + protein_filename + '\\vina_result'  ###vina_result路径
     for num in range(0, n_list):  # 按行对文件内容的读取；
         file_dir = work_dir + "\\" + protein_filename + '\\analzy\\' + s[num]  ####analyze文件夹工作路径
         file_name_list = os.listdir(file_dir)
         for file in file_name_list:
             if file == s[num] + ".txt":
-                DIR = file_dir  ####需要移动的原始文件所在路径
-                move_DIR = work_dir + "\\" + protein_filename + '\\vina_result'  ###vina_result路径
-                down_file_dir = DIR + '\\' + s[num] + ".txt"  # 移动前文件
-                move_dir_1 = os.path.join(move_DIR, file)  # 把目录和文件名合成一个路径
-                move_dir_2 = move_DIR
-                shutil.move(down_file_dir, move_dir_2)
+                source_file = file_dir + '\\' + file  # 移动前文件
+                shutil.move(source_file, dest_dir)
 
 
 def model2():
+    dest_dir = work_dir + "\\" + protein_filename + '\\vina_result'  ###vina_result路径
     for num in range(n_list, len(s)):  # 按行对文件内容的读取；
         file_dir = work_dir + "\\" + protein_filename + '\\analzy\\' + s[num]  ####analyze文件夹工作路径
         file_name_list = os.listdir(file_dir)
         for file in file_name_list:
             if file == s[num] + ".txt":
-                DIR = file_dir  ####需要移动的原始文件所在路径
-                move_DIR = work_dir + "\\" + protein_filename + '\\vina_result'  ###vina_result路径
-                down_file_dir = DIR + '\\' + s[num] + ".txt"  # 移动前文件
-                move_dir_1 = os.path.join(move_DIR, file)  # 把目录和文件名合成一个路径
-                move_dir_2 = move_DIR
-                shutil.move(down_file_dir, move_dir_2)
+                source_file = file_dir + '\\' + file  # 移动前文件
+                shutil.move(source_file, dest_dir)
 
 
 def delete_files(files):
@@ -274,16 +268,16 @@ st.title("蛋白质配体对接分析")
 
 # 设置参数
 st.sidebar.header("设置参数")
-work_dir = st.sidebar.text_input("工作目录路径，注意：要求全英文！", "C://Users//WZN//Desktop//HTMDv2_vina//TEXT2")
-protein_name = st.sidebar.text_input("请输入你的目标蛋白名称", "TP53")
+work_dir = st.sidebar.text_input("工作目录路径，注意：要求全英文！", r"D:\dock")
+protein_name = st.sidebar.text_input("请输入你的目标蛋白名称", "protein")
 run_button1 = st.sidebar.button("可视化蛋白质")
 pdb_file = st.sidebar.file_uploader("上传处理后的蛋白质PDB文件", type="pdb")
 chain_ids = st.sidebar.text_input("目标链，例如：A 或者 A;B", "A")  # 输入你需要分析的目标链
 check = st.sidebar.text_input("选择结合口袋设置策略：blindness或者amino acid", "blindness")
 amino_acid_ID = st.sidebar.text_input("如果选择amino acid，请输入氨基酸序号", "NA")
-CPU_core = st.sidebar.text_input("输入用于计算内核数量（系统核数/3）", "8")
-thread = st.sidebar.text_input("输入需要使用的线程数量", "3")
-mgltools_path = st.sidebar.text_input("MGLTools安装目录", "D:/ADT_software/")
+CPU_core = st.sidebar.text_input("输入用于计算内核（系统核数/3）", "32")
+thread = st.sidebar.text_input("输入需要使用的线程数量", "1")
+mgltools_path = st.sidebar.text_input("MGLTools安装目录", r"C:\Program Files (x86)\MGLTools-1.5.7")
 run_button2 = st.sidebar.button("运行分析")
 work_dir = work_dir.replace("\\", "/")
 
