@@ -1,6 +1,6 @@
 # 载入蛋白质和小分子构像
-load protein.pdb, protein
-load xxx_out.pdbqt, ligand
+load D:\dock\TEXT6_AF-Q8N423-F1-model_v6\AF-Q8N423-F1-model_v6.pdb, protein
+load D:\dock\TEXT6_AF-Q8N423-F1-model_v6\AF-Q8N423-F1-model_v6\analzy\441336\441336_out.pdbqt, ligand
 
 # 背景设置白色
 bg_color white
@@ -27,5 +27,3 @@ color yellow, hbonds
 set dash_width, 2
 
 label protein and byres (protein within 4 of ligand) and name CA, "%s-%s" % (resn, resi)
-
-bg_color white
