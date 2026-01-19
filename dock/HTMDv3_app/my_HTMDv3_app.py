@@ -42,7 +42,7 @@ st.title("蛋白质配体对接分析")
 
 # 设置参数
 st.sidebar.header("设置参数")
-work_dir = st.sidebar.text_input("工作目录路径，注意：要求全英文！", r"D:\dock")
+work_dir = st.sidebar.text_input("工作目录路径，注意：要求全英文！", r"D:\dock\TEXT")
 protein_name = st.sidebar.text_input("请输入你的目标蛋白名称", "protein")
 run_button1 = st.sidebar.button("可视化蛋白质")
 pdb_file = st.sidebar.file_uploader("上传处理后的蛋白质PDB文件", type="pdb")

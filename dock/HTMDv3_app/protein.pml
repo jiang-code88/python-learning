@@ -1,29 +1,32 @@
-# è½½å…¥è›‹ç™½è´¨å’Œå°åˆ†å­æ„åƒ
+# ÔØÈëµ°°×ÖÊºÍĞ¡·Ö×Ó¹¹Ïñ
 load D:\dock\TEXT6_AF-Q8N423-F1-model_v6\AF-Q8N423-F1-model_v6.pdb, protein
 load D:\dock\TEXT6_AF-Q8N423-F1-model_v6\AF-Q8N423-F1-model_v6\analzy\441336\441336_out.pdbqt, ligand
 
-# èƒŒæ™¯è®¾ç½®ç™½è‰²
+# ±³¾°ÉèÖÃ°×É«
 bg_color white
 
-# éšè—æ‰€æœ‰
+# Òş²ØËùÓĞ
 hide everything
 
-# è›‹ç™½è´¨æ ·å¼æ˜¾ç¤º cartoon
+# µ°°×ÖÊÑùÊ½ÏÔÊ¾ cartoon
 show cartoon, protein
-# è›‹ç™½è´¨é¢œè‰²æ˜¾ç¤º gray70
+# µ°°×ÖÊÑÕÉ«ÏÔÊ¾ gray70
 color gray70, protein
-# è›‹ç™½è´¨é€æ˜åº¦å˜æˆ 80%
+# µ°°×ÖÊÍ¸Ã÷¶È±ä³É 80%
 set cartoon_transparency, 0.8, protein
 
-# å°åˆ†å­æ ·å¼æ˜¾ç¤º sticks
+# Ğ¡·Ö×ÓÑùÊ½ÏÔÊ¾ sticks
 show sticks, ligand
-# å°åˆ†å­é¢œè‰²æ˜¾ç¤º green
-color green, ligand
+color atomic, ligand
 
-h_add protein
-h_add ligand
-dist hbonds, protein, ligand, mode=2, cutoff=3.5, angle=55
-color yellow, hbonds
-set dash_width, 2
+# Ìí¼ÓÇâ¼ü
+distance hbonds, protein, ligand, mode=2
 
-label protein and byres (protein within 4 of ligand) and name CA, "%s-%s" % (resn, resi)
+show lines, protein
+
+# ×Ô¼ºÊÖÑ¡µ°°×²Ğ»ù£¬µ°°×ÖÊ×ª cartoon
+# show sticks, sele
+# util.cbag sele
+# label sele and name CA, "%s-%s" % (resn, resi)
+# set label_size, 16
+
